@@ -48,7 +48,7 @@ filter_version_candidates() {
 
     if [ "$lts_field" != - ]; then
       # Lowercase lts codename
-      local lts_codename="$(tr '[:upper:]' '[:lower:]' <<< "$lts_field" )"
+      local lts_codename="$(tr '[:upper:]' '[:lower:]' <<< "$lts_field")"
       local found_lts= found_lts_codename=
 
       for version_alias in "${aliases[@]}"; do
@@ -73,7 +73,7 @@ filter_version_candidates() {
 
       # No lts read for this codename yet, so this must be the more recent
       if [ "$found_lts_codename" ]; then
-        printf "lts-$lts_codename\t%s\n" "$version"
+        printf "lts-%s\t%s\n" "$lts_codename" "$version"
         aliases+=("lts-$lts_codename")
       fi
     fi
