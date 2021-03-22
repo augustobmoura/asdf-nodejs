@@ -31,7 +31,7 @@ print_index_tab() {
 # Print all alias and correspondent versions in the format "$alias\t$version"
 # Also prints versions as a alias of itself. Eg: "v10.0.0\tv10.0.0"
 filter_version_candidates() {
-  local curr_line="" aliases=""
+  local curr_line="" aliases=()
 
   # Skip headers
   IFS= read -r curr_line
@@ -42,20 +42,39 @@ filter_version_candidates() {
 
     # Version without `v` prefix
     local version="${fields[0]#v}"
-    # Lowercase lts codename, `-` if not a lts version
-    local lts_codename=$(echo "${fields[9]}" | tr '[:upper:]' '[:lower:]')
 
-    if [ "$lts_codename" != - ]; then
+    # `-` if not a lts version
+    local lts_field="${fields[9]}"
+
+    if [ "$lts_field" != - ]; then
+      # Lowercase lts codename
+      local lts_codename="$(tr '[:upper:]' '[:lower:]' <<< "$lts_field" )"
+      local found_lts= found_lts_codename=
+
+      for version_alias in "${aliases[@]}"; do
+        if [ "$version_alias" = lts ]; then
+          found_lts=1
+        fi
+
+        if [ "$version_alias" = "lts-$lts_codename" ]; then
+          found_lts_codename=1
+        fi
+
+        if [ "$found_lts" ] && [ "$found_lts_codename" ]; then
+          break
+        fi
+      done
+
       # No lts read yet, so this must be the more recent
-      if ! grep -q "^lts:" <<< "$aliases"; then
+      if [ "$found_lts" ]; then
         printf "lts\t%s\n" "$version"
-        aliases="$aliases"$'\n'"lts:$version"
+        aliases+=(lts)
       fi
 
       # No lts read for this codename yet, so this must be the more recent
-      if ! grep -q "^$lts_codename:" <<< "$aliases"; then
+      if [ "$found_lts_codename" ]; then
         printf "lts-$lts_codename\t%s\n" "$version"
-        aliases="$aliases"$'\n'"$lts_codename:$version"
+        aliases+=("lts-$lts_codename")
       fi
     fi
 
