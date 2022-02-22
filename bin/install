@@ -102,7 +102,7 @@ install_default_npm_packages() {
   filtered_packages=$(grep -vE "^\s*#" < "$default_npm_packages_file")
 
   if [ "${filtered_packages-}" ]; then 
-    printf "$(colored $CYAN "Installing the following default packages globally: ")"
+    printf "$(colored $CYAN "Installing the following default package(s) globally: ")"
     xargs printf "%s, " <<< "$filtered_packages"
     printf "\x8\x8 \n" # Cleanup last comma
 
